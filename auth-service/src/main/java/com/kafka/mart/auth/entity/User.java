@@ -39,7 +39,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
@@ -47,14 +47,24 @@ public class User {
     private Boolean enabled = true;
 
     @Builder.Default
+    @Column(nullable = false)
     private Boolean accountNonLocked = true;
 
     @Builder.Default
+    @Column(nullable = false)
     private Boolean emailVerified = false;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private LocalDateTime lastOtpSentAt;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer failedLoginAttempts = 0;
+
+    private LocalDateTime lockTime;
 
     @PrePersist
     public void prePersist() {
