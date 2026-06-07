@@ -1,0 +1,131 @@
+🚀 PHASE-2 (After Launch)
+12 Wishlist Service
+
+13 Review Service
+
+14 Coupon Service
+
+15 Search Service (Elasticsearch)
+
+16 Delivery Service
+📘 12. Wishlist Service
+
+Features:
+
+Save Product
+
+Remove Product
+
+Move To Cart
+
+Wishlist History
+
+Entities:
+
+Wishlist
+
+WishlistItem
+📘 13. Review Service
+
+Features:
+
+Product Rating
+
+Product Review
+
+Average Rating
+
+Review Update
+
+Review Delete
+
+Entities:
+
+Review
+
+ReviewImage
+📘 14. Coupon Service
+
+Features:
+
+WELCOME10
+
+NEWUSER100
+
+EID50
+
+Percentage Discount
+
+Flat Discount
+
+Entities:
+
+Coupon
+
+CouponUsage
+📘 15. Search Service
+
+Technology:
+
+Elasticsearch
+
+Features:
+
+Fast Search
+
+Auto Suggestion
+
+Category Search
+
+Brand Search
+
+Full Text Search
+
+Entities:
+
+ProductDocument
+📘 16. Delivery Service
+
+Features:
+
+Delivery Assignment
+
+Delivery Tracking
+
+Estimated Delivery
+
+Delivery Status
+
+Entities:
+
+Delivery
+
+DeliveryTracking
+🚀 PHASE-3 (Growth)
+17 Redis
+
+18 Kafka Full Integration
+
+19 Docker
+
+20 GitHub Actions
+
+21 Analytics Service
+🚀 PHASE-4 (Enterprise)
+22 Prometheus
+
+23 Grafana
+
+24 ELK Stack
+
+25 MinIO
+
+26 Kubernetes
+🏆 Final Kafka Mart Roadmap
+Phase-1  → Launch Ready ✅
+
+Phase-2  → Market Ready
+
+Phase-3  → High Performance
+
+Phase-4  → Enterprise Grade
