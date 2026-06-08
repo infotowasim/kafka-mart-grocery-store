@@ -1,6 +1,7 @@
 package com.kafka.mart.auth.exception;
 
 import com.kafka.mart.auth.dto.response.ApiResponse;
+import com.kafka.mart.auth.exception.handler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;

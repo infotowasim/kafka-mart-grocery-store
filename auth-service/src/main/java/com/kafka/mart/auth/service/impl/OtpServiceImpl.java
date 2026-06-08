@@ -2,50 +2,68 @@ package com.kafka.mart.auth.service.impl;
 
 import com.kafka.mart.auth.entity.OtpVerification;
 import com.kafka.mart.auth.entity.User;
-import com.kafka.mart.auth.exception.BadRequestException;
 import com.kafka.mart.auth.repository.OtpVerificationRepository;
 import com.kafka.mart.auth.service.OtpService;
+import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Random;
+
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(noRollbackFor = BadRequestException.class)
-public class OtpServiceImpl implements OtpService {
+public class OtpServiceImpl
+        implements OtpService {
 
     private final OtpVerificationRepository otpRepository;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Override
     public String generateOtp() {
 
         return String.format(
                 "%06d",
-                new Random().nextInt(999999)
+                RANDOM.nextInt(1_000_000)
         );
     }
 
+
+
     @Override
-    public void saveOtp(User user, String otp) {
+    public void saveOtp(
+            User user,
+            String otp
+    ) {
 
         OtpVerification otpVerification =
-                otpRepository.findByUser(user)
+                otpRepository
+                        .findByUser(user)
                         .orElse(
-                                OtpVerification.builder()
+                                OtpVerification
+                                        .builder()
                                         .user(user)
                                         .build()
                         );
 
         otpVerification.setOtp(otp);
+
         otpVerification.setExpiryTime(
-                LocalDateTime.now().plusMinutes(5)
+                DateTimeUtil.now()
+                        .plusMinutes(5)
         );
-        otpVerification.setVerified(false);
-        otpVerification.setAttemptCount(0);
-        otpRepository.save(otpVerification);
+
+        otpVerification.setVerified(
+                false
+        );
+
+        otpVerification.setAttemptCount(
+                0
+        );
+
+        otpRepository.save(
+                otpVerification
+        );
     }
 
     @Override
@@ -55,62 +73,48 @@ public class OtpServiceImpl implements OtpService {
     ) {
 
         OtpVerification otpVerification =
-                otpRepository.findByUser(user)
+                otpRepository
+                        .findByUser(user)
                         .orElse(null);
 
-        if (otpVerification == null) {
+        if (
+                otpVerification == null
+        ) {
             return false;
         }
 
-        if (otpVerification.getAttemptCount() >= 3) {
-            throw new BadRequestException(
-                    "OTP blocked. Maximum attempts exceeded."
-            );
-        }
-
-        if (otpVerification.getVerified()) {
+        if (
+                otpVerification
+                        .getExpiryTime()
+                        .isBefore(
+                                DateTimeUtil.now()
+                        )
+        ) {
             return false;
         }
 
-        if (otpVerification.getExpiryTime()
-                .isBefore(LocalDateTime.now())) {
-            return false;
-        }
-
-        if (!otpVerification.getOtp().equals(otp)) {
+        if (
+                !otpVerification
+                        .getOtp()
+                        .equals(otp)
+        ) {
 
             otpVerification.setAttemptCount(
                     otpVerification.getAttemptCount() + 1
             );
 
-            otpRepository.saveAndFlush(
+            otpRepository.save(
                     otpVerification
             );
-
-            System.out.println(
-                    "AFTER SAVE = "
-                            + otpVerification.getAttemptCount()
-            );
-
-            if (otpVerification.getAttemptCount() >= 3) {
-
-                System.out.println(
-                        "BLOCKING AT = "
-                                + otpVerification.getAttemptCount()
-                );
-
-                throw new BadRequestException(
-                        "OTP blocked. Maximum attempts exceeded."
-                );
-            }
 
             return false;
         }
 
-        otpVerification.setAttemptCount(0);
-        otpVerification.setVerified(true);
+        otpVerification.setVerified(
+                true
+        );
 
-        otpRepository.saveAndFlush(
+        otpRepository.save(
                 otpVerification
         );
 

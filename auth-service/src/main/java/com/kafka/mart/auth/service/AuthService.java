@@ -11,10 +11,6 @@ public interface AuthService {
 
     LoginResponse login(LoginRequest request);
 
-    ApiResponse sendOtp(OtpRequest request);
-
-    ApiResponse verifyOtp(VerifyOtpRequest request);
-
     ApiResponse forgotPassword(ForgotPasswordRequest request);
 
     ApiResponse resetPassword(ResetPasswordRequest request);
@@ -23,11 +19,16 @@ public interface AuthService {
 
     UserResponse getCurrentUser();
 
-    ApiResponse resendOtp(OtpRequest request);
-
     LoginResponse refreshToken(RefreshTokenRequest request);
 
     ApiResponse logout(RefreshTokenRequest request);
 
+    ApiResponse resetPasswordByToken(ResetPasswordByTokenRequest request);
 
+
+    ApiResponse sendOtp(OtpRequest request);
+
+    ApiResponse verifyOtp(VerifyOtpRequest request);
+
+    ApiResponse resendOtp(OtpRequest request);
 }

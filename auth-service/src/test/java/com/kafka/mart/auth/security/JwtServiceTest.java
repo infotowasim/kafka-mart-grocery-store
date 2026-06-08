@@ -1,5 +1,6 @@
 package com.kafka.mart.auth.security;
 
+import com.kafka.mart.auth.security.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.User;

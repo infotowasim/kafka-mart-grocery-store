@@ -1,42 +1,37 @@
 🚀 PHASE-2 (After Launch)
-12 Wishlist Service
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-13 Review Service
 
-14 Coupon Service
+12. Wishlist Service
+13. Review Service
+14. Coupon Service
+15. Search Service (Elasticsearch)
+16. Delivery Service
 
-15 Search Service (Elasticsearch)
 
-16 Delivery Service
 📘 12. Wishlist Service
+***********************************
 
 Features:
 
 Save Product
-
 Remove Product
-
 Move To Cart
-
 Wishlist History
-
 Entities:
-
 Wishlist
+WishlistItem 
 
-WishlistItem
+
 📘 13. Review Service
+***********************************
 
 Features:
 
 Product Rating
-
 Product Review
-
 Average Rating
-
 Review Update
-
 Review Delete
 
 Entities:

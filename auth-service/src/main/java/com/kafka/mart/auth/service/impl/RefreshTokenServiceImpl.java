@@ -5,11 +5,12 @@ import com.kafka.mart.auth.entity.User;
 import com.kafka.mart.auth.exception.BadRequestException;
 import com.kafka.mart.auth.repository.RefreshTokenRepository;
 import com.kafka.mart.auth.service.RefreshTokenService;
+import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+
 import java.util.UUID;
 
 @Service
@@ -40,7 +41,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         );
 
         refreshToken.setExpiryDate(
-                LocalDateTime.now()
+                DateTimeUtil.now()
                         .plusSeconds(
                                 refreshExpiration / 1000
                         )
@@ -67,7 +68,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         if (
                 refreshToken.getExpiryDate()
                         .isBefore(
-                                LocalDateTime.now()
+                                DateTimeUtil.now()
                         )
         ) {
             throw new BadRequestException(

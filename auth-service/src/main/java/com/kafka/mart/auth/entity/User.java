@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(
@@ -19,6 +20,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
+    private static final ZoneId INDIA_ZONE =
+            ZoneId.of("Asia/Kolkata");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,15 +48,16 @@ public class User {
     private Role role;
 
     @Builder.Default
-    private Boolean enabled = true;
+    @Column(nullable = false)
+    private boolean enabled = true;
 
     @Builder.Default
     @Column(nullable = false)
-    private Boolean accountNonLocked = true;
+    private boolean accountNonLocked = true;
 
     @Builder.Default
     @Column(nullable = false)
-    private Boolean emailVerified = false;
+    private boolean emailVerified = false;
 
     private LocalDateTime createdAt;
 
@@ -68,12 +73,23 @@ public class User {
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+
+        createdAt = LocalDateTime.now(
+                INDIA_ZONE
+        );
+
+        updatedAt = LocalDateTime.now(
+                INDIA_ZONE
+        );
     }
 
     @PreUpdate
     public void preUpdate() {
-        updatedAt = LocalDateTime.now();
+
+        updatedAt = LocalDateTime.now(
+                INDIA_ZONE
+        );
     }
+
+
 }

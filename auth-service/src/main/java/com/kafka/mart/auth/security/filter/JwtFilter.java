@@ -1,10 +1,13 @@
-package com.kafka.mart.auth.security;
+package com.kafka.mart.auth.security.filter;
 
+import com.kafka.mart.auth.security.service.CustomUserDetailsService;
+import com.kafka.mart.auth.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -44,12 +48,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         jwt = authHeader.substring(7);
 
-        System.out.println("=================================");
-        System.out.println("TOKEN = " + jwt);
+        log.info("=================================");
+        log.debug("TOKEN = {}", jwt);
 
         userEmail = jwtService.extractUsername(jwt);
 
-        System.out.println("EMAIL = " + userEmail);
+        log.info("EMAIL = {}", userEmail);
 
         if (userEmail != null &&
                 SecurityContextHolder.getContext()
@@ -65,7 +69,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     userDetails
             )) {
 
-                System.out.println("TOKEN VALID");
+                log.info("TOKEN VALID");
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -83,10 +87,10 @@ public class JwtFilter extends OncePerRequestFilter {
                         .getContext()
                         .setAuthentication(authToken);
 
-                System.out.println("AUTHENTICATION SET SUCCESS");
+                log.info("AUTHENTICATION SET SUCCESS");
             } else {
 
-                System.out.println("TOKEN INVALID");
+                log.info("TOKEN INVALID");
             }
         }
 

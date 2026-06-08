@@ -1,4 +1,4 @@
-package com.kafka.mart.auth.security;
+package com.kafka.mart.auth.security.service;
 
 import com.kafka.mart.auth.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
-    private final User user;
+    private final transient User user;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -34,24 +35,17 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.getAccountNonLocked();
+        return user.isAccountNonLocked();
     }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
 
     @Override
     public boolean isEnabled() {
-        return user.getEnabled();
+        return user.isEnabled();
     }
 
 

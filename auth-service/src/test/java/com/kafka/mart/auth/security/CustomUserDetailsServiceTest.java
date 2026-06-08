@@ -2,6 +2,7 @@ package com.kafka.mart.auth.security;
 
 import com.kafka.mart.auth.entity.Role;
 import com.kafka.mart.auth.entity.User;
+import com.kafka.mart.auth.security.service.CustomUserDetails;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 

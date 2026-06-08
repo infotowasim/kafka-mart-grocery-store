@@ -1,4 +1,4 @@
-package com.kafka.mart.auth.security;
+package com.kafka.mart.auth.security.service;
 
 import com.kafka.mart.auth.entity.User;
 import com.kafka.mart.auth.repository.UserRepository;

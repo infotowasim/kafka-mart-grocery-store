@@ -32,4 +32,33 @@ public class EmailServiceImpl implements EmailService {
 
         mailSender.send(message);
     }
+
+
+
+    @Override
+    public void sendPasswordResetEmail(
+            String to,
+            String token
+    ) {
+
+        String resetLink =
+                "http://localhost:3000/reset-password?token="
+                        + token;
+
+        SimpleMailMessage message =
+                new SimpleMailMessage();
+
+        message.setTo(to);
+
+        message.setSubject(
+                "Password Reset"
+        );
+
+        message.setText(
+                "Click below link:\n\n"
+                        + resetLink
+        );
+
+        mailSender.send(message);
+    }
 }

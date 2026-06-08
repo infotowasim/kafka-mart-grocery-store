@@ -35,23 +35,9 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/send-otp")
-    public ResponseEntity<ApiResponse> sendOtp(
-            @Valid @RequestBody OtpRequest request) {
 
-        return ResponseEntity.ok(
-                authService.sendOtp(request)
-        );
-    }
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse> verifyOtp(
-            @Valid @RequestBody VerifyOtpRequest request) {
 
-        return ResponseEntity.ok(
-                authService.verifyOtp(request)
-        );
-    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse> forgotPassword(
@@ -92,15 +78,7 @@ public class AuthController {
     }
 
 
-    @PostMapping("/resend-otp")
-    public ResponseEntity<ApiResponse> resendOtp(
-            @RequestBody OtpRequest request
-    ) {
 
-        return ResponseEntity.ok(
-                authService.resendOtp(request)
-        );
-    }
 
 
     @PostMapping("/refresh-token")
@@ -123,6 +101,28 @@ public class AuthController {
                 authService.logout(request)
         );
     }
+
+
+
+    @PostMapping(
+            "/reset-password-token"
+    )
+    public ResponseEntity<ApiResponse>
+    resetPasswordByToken(
+            @RequestBody
+            ResetPasswordByTokenRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                authService
+                        .resetPasswordByToken(
+                                request
+                        )
+        );
+    }
+
+
+
 
 
 
