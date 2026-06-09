@@ -7,12 +7,14 @@ import com.kafka.mart.auth.repository.RefreshTokenRepository;
 import com.kafka.mart.auth.service.RefreshTokenService;
 import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
@@ -47,6 +49,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                         )
         );
 
+        log.info(
+                "Refresh token generated for user : {}",
+                user.getEmail()
+        );
+
+
         return refreshTokenRepository.save(
                 refreshToken
         );
@@ -60,17 +68,33 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken refreshToken =
                 refreshTokenRepository
                         .findByToken(token)
-                        .orElseThrow(() ->
-                                new BadRequestException(
-                                        "Invalid refresh token"
-                                ));
+                        .orElse(null);
+
+        if (refreshToken == null) {
+
+            log.warn(
+                    "Invalid refresh token used"
+            );
+
+            throw new BadRequestException(
+                    "Invalid refresh token"
+            );
+        }
+
+
 
         if (
                 refreshToken.getExpiryDate()
                         .isBefore(
                                 DateTimeUtil.now()
                         )
-        ) {
+        )
+        {
+
+            log.warn(
+                    "Expired refresh token used"
+            );
+
             throw new BadRequestException(
                     "Refresh token expired"
             );

@@ -7,7 +7,11 @@ import lombok.Data;
 @Builder
 public class ApiSuccessPayload {
 
+    private boolean success;
+
     private String message;
 
     private Object data;
+
+    private PaginationPayload pagination;
 }

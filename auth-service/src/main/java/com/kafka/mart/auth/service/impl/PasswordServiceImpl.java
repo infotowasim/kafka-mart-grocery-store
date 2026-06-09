@@ -3,23 +3,25 @@ package com.kafka.mart.auth.service.impl;
 import com.kafka.mart.auth.dto.request.ChangePasswordRequest;
 import com.kafka.mart.auth.dto.request.ForgotPasswordRequest;
 import com.kafka.mart.auth.dto.request.ResetPasswordByTokenRequest;
-import com.kafka.mart.auth.dto.response.ApiResponse;
 import com.kafka.mart.auth.entity.PasswordResetToken;
 import com.kafka.mart.auth.entity.User;
 import com.kafka.mart.auth.exception.BadRequestException;
 import com.kafka.mart.auth.exception.ResourceNotFoundException;
+import com.kafka.mart.auth.payload.ApiSuccessPayload;
 import com.kafka.mart.auth.repository.PasswordResetTokenRepository;
 import com.kafka.mart.auth.repository.UserRepository;
 import com.kafka.mart.auth.service.EmailService;
 import com.kafka.mart.auth.service.PasswordService;
 import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.kafka.mart.auth.constants.ErrorMessageConstants;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PasswordServiceImpl
@@ -36,7 +38,7 @@ public class PasswordServiceImpl
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public ApiResponse forgotPassword(
+    public ApiSuccessPayload forgotPassword(
             ForgotPasswordRequest request
     ) {
 
@@ -71,12 +73,22 @@ public class PasswordServiceImpl
         passwordResetTokenRepository
                 .save(token);
 
+        log.info(
+                "Password reset token generated for : {}",
+                user.getEmail()
+        );
+
         emailService.sendPasswordResetEmail(
                 user.getEmail(),
                 token.getToken()
         );
 
-        return ApiResponse.builder()
+        log.info(
+                "Password reset email sent to : {}",
+                user.getEmail()
+        );
+
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message(
                         "Password reset token generated"
@@ -88,7 +100,7 @@ public class PasswordServiceImpl
 
 
     @Override
-    public ApiResponse resetPasswordByToken(
+    public ApiSuccessPayload resetPasswordByToken(
             ResetPasswordByTokenRequest request
     ) {
 
@@ -109,6 +121,10 @@ public class PasswordServiceImpl
                         )
         ) {
 
+            log.warn(
+                    "Expired password reset token used"
+            );
+
             throw new BadRequestException(
                     ErrorMessageConstants.TOKEN_EXPIRED
             );
@@ -125,10 +141,15 @@ public class PasswordServiceImpl
 
         userRepository.save(user);
 
+        log.info(
+                "Password reset successfully for : {}",
+                user.getEmail()
+        );
+
         passwordResetTokenRepository
                 .delete(token);
 
-        return ApiResponse.builder()
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message(
                         "Password reset successfully"
@@ -137,7 +158,7 @@ public class PasswordServiceImpl
     }
 
     @Override
-    public ApiResponse changePassword(
+    public ApiSuccessPayload changePassword(
             ChangePasswordRequest request
     ) {
 
@@ -157,6 +178,11 @@ public class PasswordServiceImpl
                 )
         ) {
 
+            log.warn(
+                    "Invalid old password entered by : {}",
+                    user.getEmail()
+            );
+
             throw new BadRequestException(
                     "Old password is incorrect"
             );
@@ -170,7 +196,12 @@ public class PasswordServiceImpl
 
         userRepository.save(user);
 
-        return ApiResponse.builder()
+        log.info(
+                "Password changed successfully for : {}",
+                user.getEmail()
+        );
+
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message(
                         "Password changed successfully"

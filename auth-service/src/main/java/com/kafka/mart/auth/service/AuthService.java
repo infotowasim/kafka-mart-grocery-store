@@ -1,34 +1,27 @@
 package com.kafka.mart.auth.service;
 
 import com.kafka.mart.auth.dto.request.*;
-        import com.kafka.mart.auth.dto.response.ApiResponse;
 import com.kafka.mart.auth.dto.response.LoginResponse;
 import com.kafka.mart.auth.dto.response.UserResponse;
+import com.kafka.mart.auth.payload.ApiSuccessPayload;
 
 public interface AuthService {
 
-    ApiResponse register(RegisterRequest request);
+    ApiSuccessPayload  register(RegisterRequest request);
 
     LoginResponse login(LoginRequest request);
-
-    ApiResponse forgotPassword(ForgotPasswordRequest request);
-
-    ApiResponse resetPassword(ResetPasswordRequest request);
-
-    ApiResponse changePassword(ChangePasswordRequest request);
 
     UserResponse getCurrentUser();
 
     LoginResponse refreshToken(RefreshTokenRequest request);
 
-    ApiResponse logout(RefreshTokenRequest request);
-
-    ApiResponse resetPasswordByToken(ResetPasswordByTokenRequest request);
+    ApiSuccessPayload  logout(RefreshTokenRequest request);
 
 
-    ApiResponse sendOtp(OtpRequest request);
 
-    ApiResponse verifyOtp(VerifyOtpRequest request);
+    ApiSuccessPayload  sendOtp(OtpRequest request);
 
-    ApiResponse resendOtp(OtpRequest request);
+    ApiSuccessPayload  verifyOtp(VerifyOtpRequest request);
+
+    ApiSuccessPayload resendOtp(OtpRequest request);
 }

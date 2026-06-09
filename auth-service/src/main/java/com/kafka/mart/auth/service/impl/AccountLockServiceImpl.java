@@ -6,10 +6,12 @@ import com.kafka.mart.auth.service.AccountLockService;
 import com.kafka.mart.auth.util.AppConstants;
 import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountLockServiceImpl
@@ -39,10 +41,24 @@ public class AccountLockServiceImpl
             user.setLockTime(
                     DateTimeUtil.now()
             );
+
+            log.warn(
+                    "Account locked for user : {}",
+                    user.getEmail()
+            );
         }
+
+        log.warn(
+                "Failed login attempt {} for user : {}",
+                attempts,
+                user.getEmail()
+        );
+
 
         userRepository.save(user);
     }
+
+
 
     @Override
     public void resetFailedAttempts(
@@ -83,6 +99,12 @@ public class AccountLockServiceImpl
             user.setFailedLoginAttempts(0);
 
             user.setLockTime(null);
+
+
+            log.info(
+                    "Account unlocked for user : {}",
+                    user.getEmail()
+            );
 
             userRepository.save(user);
 

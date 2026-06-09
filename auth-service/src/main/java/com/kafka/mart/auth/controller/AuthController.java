@@ -1,9 +1,9 @@
 package com.kafka.mart.auth.controller;
 
 import com.kafka.mart.auth.dto.request.*;
-import com.kafka.mart.auth.dto.response.ApiResponse;
 import com.kafka.mart.auth.dto.response.LoginResponse;
 import com.kafka.mart.auth.dto.response.UserResponse;
+import com.kafka.mart.auth.payload.ApiSuccessPayload;
 import com.kafka.mart.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(
+    public ResponseEntity<ApiSuccessPayload> register(
             @Valid @RequestBody RegisterRequest request) {
 
         return ResponseEntity.ok(
@@ -36,39 +36,6 @@ public class AuthController {
     }
 
 
-
-
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequest request) {
-
-        return ResponseEntity.ok(
-                authService.forgotPassword(request)
-        );
-    }
-
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse> resetPassword(
-            @RequestBody ResetPasswordRequest request
-    ) {
-        return ResponseEntity.ok(
-                authService.resetPassword(request)
-        );
-    }
-
-
-    @PostMapping("/change-password")
-    public ResponseEntity<ApiResponse> changePassword(
-            @RequestBody ChangePasswordRequest request
-    ) {
-        return ResponseEntity.ok(
-                authService.changePassword(request)
-        );
-    }
-
-
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser() {
 
@@ -76,10 +43,6 @@ public class AuthController {
                 authService.getCurrentUser()
         );
     }
-
-
-
-
 
     @PostMapping("/refresh-token")
     public ResponseEntity<LoginResponse> refreshToken(
@@ -93,7 +56,7 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(
+    public ResponseEntity<ApiSuccessPayload> logout(
             @RequestBody RefreshTokenRequest request
     ) {
 
@@ -101,29 +64,6 @@ public class AuthController {
                 authService.logout(request)
         );
     }
-
-
-
-    @PostMapping(
-            "/reset-password-token"
-    )
-    public ResponseEntity<ApiResponse>
-    resetPasswordByToken(
-            @RequestBody
-            ResetPasswordByTokenRequest request
-    ) {
-
-        return ResponseEntity.ok(
-                authService
-                        .resetPasswordByToken(
-                                request
-                        )
-        );
-    }
-
-
-
-
 
 
 }

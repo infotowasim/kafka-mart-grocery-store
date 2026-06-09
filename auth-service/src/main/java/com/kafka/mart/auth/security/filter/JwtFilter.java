@@ -48,12 +48,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         jwt = authHeader.substring(7);
 
-        log.info("=================================");
-        log.debug("TOKEN = {}", jwt);
-
         userEmail = jwtService.extractUsername(jwt);
-
-        log.info("EMAIL = {}", userEmail);
 
         if (userEmail != null &&
                 SecurityContextHolder.getContext()
@@ -68,8 +63,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     jwt,
                     userDetails
             )) {
-
-                log.info("TOKEN VALID");
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -87,11 +80,14 @@ public class JwtFilter extends OncePerRequestFilter {
                         .getContext()
                         .setAuthentication(authToken);
 
-                log.info("AUTHENTICATION SET SUCCESS");
             } else {
 
-                log.info("TOKEN INVALID");
+                log.warn(
+                        "Invalid JWT token for user : {}",
+                        userEmail
+                );
             }
+
         }
 
         filterChain.doFilter(request, response);

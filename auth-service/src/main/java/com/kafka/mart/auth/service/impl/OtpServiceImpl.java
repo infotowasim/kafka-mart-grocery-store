@@ -6,26 +6,25 @@ import com.kafka.mart.auth.repository.OtpVerificationRepository;
 import com.kafka.mart.auth.service.OtpService;
 import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.kafka.mart.auth.util.OtpGenerator;
 
 
-import java.security.SecureRandom;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OtpServiceImpl
         implements OtpService {
 
     private final OtpVerificationRepository otpRepository;
-    private static final SecureRandom RANDOM = new SecureRandom();
+
+
 
     @Override
     public String generateOtp() {
 
-        return String.format(
-                "%06d",
-                RANDOM.nextInt(1_000_000)
-        );
+        return OtpGenerator.generateOtp();
     }
 
 
@@ -64,6 +63,11 @@ public class OtpServiceImpl
         otpRepository.save(
                 otpVerification
         );
+
+        log.info(
+                "OTP saved for user : {}",
+                user.getEmail()
+        );
     }
 
     @Override
@@ -80,8 +84,16 @@ public class OtpServiceImpl
         if (
                 otpVerification == null
         ) {
+
+            log.warn(
+                    "OTP not found for user : {}",
+                    user.getEmail()
+            );
+
             return false;
         }
+
+
 
         if (
                 otpVerification
@@ -90,8 +102,16 @@ public class OtpServiceImpl
                                 DateTimeUtil.now()
                         )
         ) {
+
+            log.warn(
+                    "OTP expired for user : {}",
+                    user.getEmail()
+            );
+
             return false;
         }
+
+
 
         if (
                 !otpVerification
@@ -107,7 +127,14 @@ public class OtpServiceImpl
                     otpVerification
             );
 
+            log.warn(
+                    "Invalid OTP attempt for user : {}",
+                    user.getEmail()
+            );
+
             return false;
+
+
         }
 
         otpVerification.setVerified(
@@ -116,6 +143,11 @@ public class OtpServiceImpl
 
         otpRepository.save(
                 otpVerification
+        );
+
+        log.info(
+                "OTP verified successfully for user : {}",
+                user.getEmail()
         );
 
         return true;

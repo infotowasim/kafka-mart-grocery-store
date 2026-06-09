@@ -3,7 +3,7 @@ package com.kafka.mart.auth.service.impl;
 import com.kafka.mart.auth.constants.ErrorMessageConstants;
 import com.kafka.mart.auth.constants.KafkaTopicConstants;
 import com.kafka.mart.auth.dto.request.*;
-import com.kafka.mart.auth.dto.response.ApiResponse;
+import com.kafka.mart.auth.payload.ApiSuccessPayload;
 import com.kafka.mart.auth.dto.response.LoginResponse;
 import com.kafka.mart.auth.dto.response.UserResponse;
 import com.kafka.mart.auth.entity.*;
@@ -62,9 +62,8 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
 
 
-
     @Override
-    public ApiResponse register(RegisterRequest request) {
+    public ApiSuccessPayload register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException(
@@ -96,6 +95,11 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
+        log.info(
+                "User registered successfully : {}",
+                user.getEmail()
+        );
+
         authEventProducer.publish(
 
                 KafkaTopicConstants.USER_REGISTERED,
@@ -103,54 +107,9 @@ public class AuthServiceImpl implements AuthService {
                 eventMapper.toUserRegisteredEvent(user)
         );
 
-        return ApiResponse.builder()
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message("Registration successful")
-                .build();
-    }
-
-
-    @Override
-    public ApiResponse forgotPassword(
-            ForgotPasswordRequest request
-    ) {
-
-        User user =
-                userRepository.findByEmail(
-                                request.getEmail()
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        ErrorMessageConstants.USER_NOT_FOUND
-                                ));
-
-        PasswordResetToken token =
-                passwordResetTokenRepository
-                        .findByUser(user)
-                        .orElse(
-                                PasswordResetToken.builder()
-                                        .user(user)
-                                        .build()
-                        );
-
-        token.setToken(
-                UUID.randomUUID().toString()
-        );
-
-        token.setExpiryDate(
-                DateTimeUtil.now()
-                        .plusMinutes(15)
-        );
-
-        passwordResetTokenRepository.save(
-                token
-        );
-
-        return ApiResponse.builder()
-                .success(true)
-                .message(
-                        "Password reset token generated"
-                )
                 .build();
     }
 
@@ -161,10 +120,18 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(
                         request.getEmail()
                 )
+
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 ErrorMessageConstants.USER_NOT_FOUND
                         ));
+
+
+        log.info(
+                "Login attempt : {}",
+                request.getEmail()
+        );
+
 
         if (!user.isEmailVerified()) {
 
@@ -205,6 +172,12 @@ public class AuthServiceImpl implements AuthService {
                             user
                     );
 
+            log.warn(
+                    "Failed login attempt : {}",
+                    request.getEmail()
+            );
+
+
             User updatedUser =
                     userRepository.findByEmail(
                                     user.getEmail()
@@ -243,6 +216,12 @@ public class AuthServiceImpl implements AuthService {
                                 user
                         );
 
+        log.info(
+                "User logged in successfully : {}",
+                user.getEmail()
+        );
+
+
         return LoginResponse.builder()
                 .accessToken(
                         accessToken
@@ -258,90 +237,6 @@ public class AuthServiceImpl implements AuthService {
                                 user
                         )
                 )
-                .build();
-    }
-
-    @Override
-    public ApiResponse resetPassword(
-            ResetPasswordRequest request
-    ) {
-
-        User user = userRepository.findByEmail(
-                        request.getEmail()
-                )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                ErrorMessageConstants.USER_NOT_FOUND
-                        ));
-
-        OtpVerification otpVerification =
-                otpVerificationRepository
-                        .findByUser(user)
-                        .orElseThrow(() ->
-                                new BadRequestException(
-                                        ErrorMessageConstants.OTP_NOT_FOUND
-                                ));
-
-        if (!Boolean.TRUE.equals(otpVerification.getVerified())) {
-            throw new BadRequestException(
-                    "OTP verification required"
-            );
-        }
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getNewPassword()
-                )
-        );
-
-        userRepository.save(user);
-
-        otpVerificationRepository.delete(
-                otpVerification
-        );
-
-        return ApiResponse.builder()
-                .success(true)
-                .message(
-                        "Password reset successfully"
-                )
-                .build();
-    }
-
-
-    @Override
-    public ApiResponse changePassword(
-            ChangePasswordRequest request
-    ) {
-
-        User user = userRepository.findByEmail(
-                        request.getEmail()
-                )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                ErrorMessageConstants.USER_NOT_FOUND
-                        ));
-
-        if (!passwordEncoder.matches(
-                request.getOldPassword(),
-                user.getPassword()
-        )) {
-            throw new BadRequestException(
-                    INVALID_OLD_PASSWORD
-            );
-        }
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getNewPassword()
-                )
-        );
-
-        userRepository.save(user);
-
-        return ApiResponse.builder()
-                .success(true)
-                .message("Password changed successfully")
                 .build();
     }
 
@@ -366,8 +261,6 @@ public class AuthServiceImpl implements AuthService {
 
         return userMapper.toResponse(user);
     }
-
-
 
 
     @Override
@@ -395,6 +288,12 @@ public class AuthServiceImpl implements AuthService {
                         userDetails
                 );
 
+        log.info(
+                "Access token refreshed for : {}",
+                user.getEmail()
+        );
+
+
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(
@@ -409,7 +308,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public ApiResponse logout(
+    public ApiSuccessPayload logout(
             RefreshTokenRequest request
     ) {
 
@@ -417,7 +316,12 @@ public class AuthServiceImpl implements AuthService {
                 request.getRefreshToken()
         );
 
-        return ApiResponse.builder()
+        log.info(
+                "User logged out successfully"
+        );
+
+
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message("Logged out successfully")
                 .build();
@@ -425,58 +329,10 @@ public class AuthServiceImpl implements AuthService {
 
 
 
-    @Override
-    @Transactional
-    public ApiResponse resetPasswordByToken(
-            ResetPasswordByTokenRequest request
-    ) {
 
-        PasswordResetToken resetToken =
-                passwordResetTokenRepository
-                        .findByToken(
-                                request.getToken()
-                        )
-                        .orElseThrow(() ->
-                                new BadRequestException(
-                                        "Invalid token"
-                                ));
-
-        if (
-                resetToken.getExpiryDate()
-                        .isBefore(
-                                DateTimeUtil.now()
-                        )
-        ) {
-
-            throw new BadRequestException(
-                    ErrorMessageConstants.TOKEN_EXPIRED
-            );
-        }
-
-        User user =
-                resetToken.getUser();
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getNewPassword()
-                )
-        );
-
-        userRepository.save(user);
-
-        passwordResetTokenRepository
-                .delete(resetToken);
-
-        return ApiResponse.builder()
-                .success(true)
-                .message(
-                        "Password reset successful"
-                )
-                .build();
-    }
 
     @Override
-    public ApiResponse sendOtp(
+    public ApiSuccessPayload sendOtp(
             OtpRequest request
     ) {
 
@@ -501,22 +357,27 @@ public class AuthServiceImpl implements AuthService {
                 otp
         );
 
+        log.info(
+                "OTP sent successfully : {}",
+                user.getEmail()
+        );
+
+
         user.setLastOtpSentAt(
                 DateTimeUtil.now()
         );
 
         userRepository.save(user);
 
-        return ApiResponse.builder()
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message("OTP sent successfully")
                 .build();
     }
 
 
-
     @Override
-    public ApiResponse verifyOtp(
+    public ApiSuccessPayload verifyOtp(
             VerifyOtpRequest request
     ) {
 
@@ -536,7 +397,12 @@ public class AuthServiceImpl implements AuthService {
 
         if (!valid) {
 
-            return ApiResponse.builder()
+            log.warn(
+                    "Invalid OTP attempt : {}",
+                    user.getEmail()
+            );
+
+            return ApiSuccessPayload.builder()
                     .success(false)
                     .message("Invalid or expired OTP")
                     .build();
@@ -546,21 +412,26 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
+        log.info(
+                "OTP verified successfully : {}",
+                user.getEmail()
+        );
+
+
         authEventProducer.publish(
                 KafkaTopicConstants.USER_VERIFIED,
                 eventMapper.toUserVerifiedEvent(user)
         );
 
-        return ApiResponse.builder()
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message("OTP verified successfully")
                 .build();
     }
 
 
-
     @Override
-    public ApiResponse resendOtp(
+    public ApiSuccessPayload resendOtp(
             OtpRequest request
     ) {
 
@@ -585,13 +456,19 @@ public class AuthServiceImpl implements AuthService {
                 otp
         );
 
+
+        log.info(
+                "OTP resent successfully : {}",
+                user.getEmail()
+        );
+
         user.setLastOtpSentAt(
                 DateTimeUtil.now()
         );
 
         userRepository.save(user);
 
-        return ApiResponse.builder()
+        return ApiSuccessPayload.builder()
                 .success(true)
                 .message("OTP resent successfully")
                 .build();

@@ -3,7 +3,7 @@ package com.kafka.mart.auth.controller;
 import com.kafka.mart.auth.dto.request.ChangePasswordRequest;
 import com.kafka.mart.auth.dto.request.ForgotPasswordRequest;
 import com.kafka.mart.auth.dto.request.ResetPasswordByTokenRequest;
-import com.kafka.mart.auth.dto.response.ApiResponse;
+import com.kafka.mart.auth.payload.ApiSuccessPayload;
 import com.kafka.mart.auth.service.PasswordService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class PasswordController {
     @PostMapping(
             "/forgot-password"
     )
-    public ApiResponse forgotPassword(
+    public ApiSuccessPayload forgotPassword(
             @Valid
             @RequestBody
             ForgotPasswordRequest request
@@ -34,25 +34,22 @@ public class PasswordController {
                 );
     }
 
-    @PostMapping(
-            "/reset-password"
-    )
-    public ApiResponse resetPassword(
+    @PostMapping("/reset-password-token")
+    public ApiSuccessPayload resetPasswordByToken(
             @Valid
             @RequestBody
             ResetPasswordByTokenRequest request
     ) {
 
-        return passwordService
-                .resetPasswordByToken(
-                        request
-                );
+        return passwordService.resetPasswordByToken(
+                request
+        );
     }
 
     @PostMapping(
             "/change-password"
     )
-    public ApiResponse changePassword(
+    public ApiSuccessPayload changePassword(
             @Valid
             @RequestBody
             ChangePasswordRequest request
