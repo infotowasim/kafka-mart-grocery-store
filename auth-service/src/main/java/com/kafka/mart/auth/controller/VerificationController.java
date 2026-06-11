@@ -14,12 +14,8 @@ public class VerificationController {
 
     private final AuthService authService;
 
-    @PostMapping("/send-otp")
-    public ApiSuccessPayload sendOtp(
-            @RequestBody OtpRequest request
-    ) {
-        return authService.sendOtp(request);
-    }
+
+
 
     @PostMapping("/verify-otp")
     public ApiSuccessPayload verifyOtp(

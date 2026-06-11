@@ -12,4 +12,6 @@ public interface RefreshTokenService {
     RefreshToken verifyRefreshToken(
             String token
     );
+
+    void deleteRefreshToken(String token);
 }

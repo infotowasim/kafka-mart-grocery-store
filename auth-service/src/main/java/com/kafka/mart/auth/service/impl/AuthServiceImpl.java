@@ -62,183 +62,128 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
 
 
+
+
+
     @Override
     public ApiSuccessPayload register(RegisterRequest request) {
 
+
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException(
-                    ErrorMessageConstants.EMAIL_ALREADY_EXISTS
-            );
+            throw new DuplicateResourceException(ErrorMessageConstants.EMAIL_ALREADY_EXISTS);
         }
+
 
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new DuplicateResourceException(
-                    ErrorMessageConstants.PHONE_ALREADY_EXISTS
-            );
+            throw new DuplicateResourceException(ErrorMessageConstants.PHONE_ALREADY_EXISTS);
         }
 
-        Role role = roleRepository.findByName(
-                        RoleConstants.ROLE_CUSTOMER
-                )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
+
+        Role role = roleRepository.findByName(RoleConstants.ROLE_CUSTOMER).orElseThrow(
+                () -> new ResourceNotFoundException(
                                 "Default role not found"
                         ));
 
+
         User user = userMapper.toEntity(request);
 
-        user.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         user.setRole(role);
 
+        user.setLastOtpSentAt(DateTimeUtil.now());
+
         userRepository.save(user);
 
-        log.info(
-                "User registered successfully : {}",
-                user.getEmail()
-        );
+        String otp = otpService.generateOtp();
 
-        authEventProducer.publish(
+        otpService.saveOtp(user, otp);
 
-                KafkaTopicConstants.USER_REGISTERED,
+        emailService.sendOtpEmail(user.getEmail(), otp);
 
-                eventMapper.toUserRegisteredEvent(user)
-        );
+        log.info("User registered and OTP sent successfully : {}", user.getEmail());
+
+        authEventProducer.publish(KafkaTopicConstants.USER_REGISTERED, eventMapper.toUserRegisteredEvent(user));
 
         return ApiSuccessPayload.builder()
                 .success(true)
-                .message("Registration successful")
+                .message("Registration successful. Please verify your email.")
                 .build();
+
     }
+
+
+
 
 
     @Override
     public LoginResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(
-                        request.getEmail()
-                )
-
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                ErrorMessageConstants.USER_NOT_FOUND
-                        ));
+        User user = userRepository.findByEmailOrPhone(request.getUsername(), request.getUsername())
+                        .orElseThrow(() -> new ResourceNotFoundException(ErrorMessageConstants.USER_NOT_FOUND));
 
 
-        log.info(
-                "Login attempt : {}",
-                request.getEmail()
-        );
+        log.info("Login attempt : {}", request.getUsername());
 
 
         if (!user.isEmailVerified()) {
-
-            throw new ForbiddenException(
-                    "Please verify your email first"
-            );
+            throw new ForbiddenException("Please verify your email first");
         }
 
         if (!user.isAccountNonLocked()) {
 
-            boolean unlocked =
-                    accountLockService
-                            .unlockWhenTimeExpired(
-                                    user
-                            );
+            boolean unlocked = accountLockService.unlockWhenTimeExpired(user);
 
             if (!unlocked) {
-
-                throw new ForbiddenException(
-                        "Account is locked. Try again later."
-                );
+                throw new ForbiddenException("Account is locked. Try again later.");
             }
         }
 
         try {
 
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
         } catch (Exception ex) {
 
-            accountLockService
-                    .increaseFailedAttempts(
-                            user
-                    );
+            accountLockService.increaseFailedAttempts(user);
 
-            log.warn(
-                    "Failed login attempt : {}",
-                    request.getEmail()
-            );
+            log.warn("Failed login attempt : {}", request.getUsername());
 
 
-            User updatedUser =
-                    userRepository.findByEmail(
-                                    user.getEmail()
-                            )
-                            .orElse(user);
+            User updatedUser = userRepository.findByEmail(user.getEmail()).orElse(user);
 
             if (!updatedUser.isAccountNonLocked()) {
 
-                throw new ForbiddenException(
-                        "Account locked after 5 failed attempts"
-                );
+                throw new ForbiddenException("Account locked after 5 failed attempts");
             }
 
             throw ex;
         }
 
-        accountLockService
-                .resetFailedAttempts(
-                        user
-                );
+        accountLockService.resetFailedAttempts(user);
 
-        UserDetails userDetails =
-                customUserDetailsService
-                        .loadUserByUsername(
-                                user.getEmail()
-                        );
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
 
-        String accessToken =
-                jwtService.generateToken(
-                        userDetails
-                );
+        String accessToken = jwtService.generateToken(userDetails);
 
-        RefreshToken refreshToken =
-                refreshTokenService
-                        .createRefreshToken(
-                                user
-                        );
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        log.info(
-                "User logged in successfully : {}",
-                user.getEmail()
-        );
+        log.info("User logged in successfully : {}", user.getEmail());
 
 
         return LoginResponse.builder()
-                .accessToken(
-                        accessToken
-                )
+                .accessToken(accessToken)
                 .refreshToken(
-                        refreshToken.getToken()
-                )
-                .tokenType(
-                        "Bearer"
-                )
+                        refreshToken.getToken())
+                .tokenType("Bearer")
                 .user(
-                        userMapper.toResponse(
-                                user
-                        )
-                )
+                        userMapper.toResponse(user))
                 .build();
     }
+
+
+
 
 
     @Override
@@ -288,6 +233,20 @@ public class AuthServiceImpl implements AuthService {
                         userDetails
                 );
 
+
+        refreshTokenService
+                .deleteRefreshToken(
+                        request.getRefreshToken()
+                );
+
+        RefreshToken newRefreshToken =
+                refreshTokenService
+                        .createRefreshToken(
+                                user
+                        );
+
+
+
         log.info(
                 "Access token refreshed for : {}",
                 user.getEmail()
@@ -297,8 +256,7 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(
-                        refreshToken.getToken()
-                )
+                        newRefreshToken.getToken())
                 .tokenType("Bearer")
                 .user(
                         userMapper.toResponse(user)
@@ -331,49 +289,6 @@ public class AuthServiceImpl implements AuthService {
 
 
 
-    @Override
-    public ApiSuccessPayload sendOtp(
-            OtpRequest request
-    ) {
-
-        User user = userRepository.findByEmail(
-                        request.getEmail()
-                )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                ErrorMessageConstants.USER_NOT_FOUND
-                        ));
-
-        String otp =
-                otpService.generateOtp();
-
-        otpService.saveOtp(
-                user,
-                otp
-        );
-
-        emailService.sendOtpEmail(
-                user.getEmail(),
-                otp
-        );
-
-        log.info(
-                "OTP sent successfully : {}",
-                user.getEmail()
-        );
-
-
-        user.setLastOtpSentAt(
-                DateTimeUtil.now()
-        );
-
-        userRepository.save(user);
-
-        return ApiSuccessPayload.builder()
-                .success(true)
-                .message("OTP sent successfully")
-                .build();
-    }
 
 
     @Override

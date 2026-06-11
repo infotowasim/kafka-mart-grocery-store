@@ -19,7 +19,7 @@ public interface AuthService {
 
 
 
-    ApiSuccessPayload  sendOtp(OtpRequest request);
+//    ApiSuccessPayload  sendOtp(OtpRequest request);
 
     ApiSuccessPayload  verifyOtp(VerifyOtpRequest request);
 

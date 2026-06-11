@@ -15,6 +15,7 @@ import com.kafka.mart.auth.service.PasswordService;
 import com.kafka.mart.auth.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.kafka.mart.auth.constants.ErrorMessageConstants;
@@ -162,26 +163,23 @@ public class PasswordServiceImpl
             ChangePasswordRequest request
     ) {
 
+        String email =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName();
+
         User user =
-                userRepository.findByEmail(
-                                request.getEmail()
-                        )
+                userRepository.findByEmail(email)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         ErrorMessageConstants.USER_NOT_FOUND
                                 ));
 
-        if (
-                !passwordEncoder.matches(
-                        request.getOldPassword(),
-                        user.getPassword()
-                )
-        ) {
-
-            log.warn(
-                    "Invalid old password entered by : {}",
-                    user.getEmail()
-            );
+        if (!passwordEncoder.matches(
+                request.getOldPassword(),
+                user.getPassword()
+        )) {
 
             throw new BadRequestException(
                     "Old password is incorrect"
@@ -196,16 +194,9 @@ public class PasswordServiceImpl
 
         userRepository.save(user);
 
-        log.info(
-                "Password changed successfully for : {}",
-                user.getEmail()
-        );
-
         return ApiSuccessPayload.builder()
                 .success(true)
-                .message(
-                        "Password changed successfully"
-                )
+                .message("Password changed successfully")
                 .build();
     }
 }
