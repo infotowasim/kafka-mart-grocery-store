@@ -8,6 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
 
+    private static final LocalDateTime TEST_TIME =
+            LocalDateTime.of(
+                    2025,
+                    1,
+                    1,
+                    10,
+                    0
+            );
+
     @Test
     void builder_shouldCreateUser() {
 
@@ -55,38 +64,30 @@ class UserTest {
         );
 
         assertEquals(
+                "password",
+                user.getPassword()
+        );
+
+        assertEquals(
                 role,
                 user.getRole()
         );
-    }
 
-    @Test
-    void prePersist_shouldSetCreatedAtAndUpdatedAt() {
-
-        User user =
-                new User();
-
-        user.prePersist();
-
-        assertNotNull(
-                user.getCreatedAt()
+        assertTrue(
+                user.isEnabled()
         );
 
-        assertNotNull(
-                user.getUpdatedAt()
+        assertTrue(
+                user.isAccountNonLocked()
         );
-    }
 
-    @Test
-    void preUpdate_shouldSetUpdatedAt() {
+        assertFalse(
+                user.isEmailVerified()
+        );
 
-        User user =
-                new User();
-
-        user.preUpdate();
-
-        assertNotNull(
-                user.getUpdatedAt()
+        assertEquals(
+                0,
+                user.getFailedLoginAttempts()
         );
     }
 
@@ -96,8 +97,8 @@ class UserTest {
         User user =
                 new User();
 
-        LocalDateTime now =
-                LocalDateTime.now();
+        Role role =
+                new Role();
 
         user.setId(1L);
         user.setFirstName("Wasim");
@@ -105,25 +106,110 @@ class UserTest {
         user.setEmail("test@gmail.com");
         user.setPhone("9999999999");
         user.setPassword("password");
+        user.setRole(role);
         user.setEnabled(true);
         user.setAccountNonLocked(true);
         user.setEmailVerified(true);
-        user.setCreatedAt(now);
-        user.setUpdatedAt(now);
-        user.setLastOtpSentAt(now);
+        user.setLastOtpSentAt(TEST_TIME);
         user.setFailedLoginAttempts(5);
-        user.setLockTime(now);
+        user.setLockTime(TEST_TIME);
 
-        assertEquals(1L, user.getId());
-        assertEquals("Wasim", user.getFirstName());
-        assertEquals("Akram", user.getLastName());
-        assertEquals("test@gmail.com", user.getEmail());
-        assertEquals("9999999999", user.getPhone());
-        assertEquals("password", user.getPassword());
-        assertTrue(user.isEnabled());
-        assertTrue(user.isAccountNonLocked());
-        assertTrue(user.isEmailVerified());
-        assertEquals(5, user.getFailedLoginAttempts());
-        assertEquals(now, user.getLockTime());
+        assertEquals(
+                1L,
+                user.getId()
+        );
+
+        assertEquals(
+                "Wasim",
+                user.getFirstName()
+        );
+
+        assertEquals(
+                "Akram",
+                user.getLastName()
+        );
+
+        assertEquals(
+                "test@gmail.com",
+                user.getEmail()
+        );
+
+        assertEquals(
+                "9999999999",
+                user.getPhone()
+        );
+
+        assertEquals(
+                "password",
+                user.getPassword()
+        );
+
+        assertEquals(
+                role,
+                user.getRole()
+        );
+
+        assertTrue(
+                user.isEnabled()
+        );
+
+        assertTrue(
+                user.isAccountNonLocked()
+        );
+
+        assertTrue(
+                user.isEmailVerified()
+        );
+
+        assertEquals(
+                TEST_TIME,
+                user.getLastOtpSentAt()
+        );
+
+        assertEquals(
+                5,
+                user.getFailedLoginAttempts()
+        );
+
+        assertEquals(
+                TEST_TIME,
+                user.getLockTime()
+        );
+    }
+
+    @Test
+    void noArgsConstructor_shouldWork() {
+
+        User user =
+                new User();
+
+        assertNotNull(
+                user
+        );
+    }
+
+    @Test
+    void builderDefaultValues_shouldBeApplied() {
+
+        User user =
+                User.builder()
+                        .build();
+
+        assertTrue(
+                user.isEnabled()
+        );
+
+        assertTrue(
+                user.isAccountNonLocked()
+        );
+
+        assertFalse(
+                user.isEmailVerified()
+        );
+
+        assertEquals(
+                0,
+                user.getFailedLoginAttempts()
+        );
     }
 }

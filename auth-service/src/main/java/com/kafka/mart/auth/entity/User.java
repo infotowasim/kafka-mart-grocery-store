@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import com.kafka.mart.auth.audit.BaseAuditEntity;
 
 @Entity
 @Table(
@@ -19,10 +19,7 @@ import java.time.ZoneId;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-
-    private static final ZoneId INDIA_ZONE =
-            ZoneId.of("Asia/Kolkata");
+public class User extends BaseAuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,10 +56,6 @@ public class User {
     @Column(nullable = false)
     private boolean emailVerified = false;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
     private LocalDateTime lastOtpSentAt;
 
     @Builder.Default
@@ -70,26 +63,6 @@ public class User {
     private Integer failedLoginAttempts = 0;
 
     private LocalDateTime lockTime;
-
-    @PrePersist
-    public void prePersist() {
-
-        createdAt = LocalDateTime.now(
-                INDIA_ZONE
-        );
-
-        updatedAt = LocalDateTime.now(
-                INDIA_ZONE
-        );
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-
-        updatedAt = LocalDateTime.now(
-                INDIA_ZONE
-        );
-    }
 
 
 }

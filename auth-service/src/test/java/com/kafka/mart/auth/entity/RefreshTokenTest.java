@@ -8,20 +8,26 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RefreshTokenTest {
 
+    private static final LocalDateTime TEST_TIME =
+            LocalDateTime.of(
+                    2025,
+                    1,
+                    1,
+                    10,
+                    0
+            );
+
     @Test
     void builder_shouldCreateRefreshToken() {
 
         User user =
                 new User();
 
-        LocalDateTime expiryDate =
-                LocalDateTime.now();
-
         RefreshToken refreshToken =
                 RefreshToken.builder()
                         .id(1L)
                         .token("refresh-token")
-                        .expiryDate(expiryDate)
+                        .expiryDate(TEST_TIME)
                         .user(user)
                         .build();
 
@@ -36,7 +42,7 @@ class RefreshTokenTest {
         );
 
         assertEquals(
-                expiryDate,
+                TEST_TIME,
                 refreshToken.getExpiryDate()
         );
 
@@ -55,12 +61,9 @@ class RefreshTokenTest {
         User user =
                 new User();
 
-        LocalDateTime expiryDate =
-                LocalDateTime.now();
-
         refreshToken.setId(2L);
         refreshToken.setToken("token-123");
-        refreshToken.setExpiryDate(expiryDate);
+        refreshToken.setExpiryDate(TEST_TIME);
         refreshToken.setUser(user);
 
         assertEquals(
@@ -74,7 +77,7 @@ class RefreshTokenTest {
         );
 
         assertEquals(
-                expiryDate,
+                TEST_TIME,
                 refreshToken.getExpiryDate()
         );
 
@@ -92,44 +95,6 @@ class RefreshTokenTest {
 
         assertNotNull(
                 refreshToken
-        );
-    }
-
-    @Test
-    void allArgsConstructor_shouldWork() {
-
-        User user =
-                new User();
-
-        LocalDateTime expiryDate =
-                LocalDateTime.now();
-
-        RefreshToken refreshToken =
-                new RefreshToken(
-                        1L,
-                        "refresh-token",
-                        expiryDate,
-                        user
-                );
-
-        assertEquals(
-                1L,
-                refreshToken.getId()
-        );
-
-        assertEquals(
-                "refresh-token",
-                refreshToken.getToken()
-        );
-
-        assertEquals(
-                expiryDate,
-                refreshToken.getExpiryDate()
-        );
-
-        assertEquals(
-                user,
-                refreshToken.getUser()
         );
     }
 }

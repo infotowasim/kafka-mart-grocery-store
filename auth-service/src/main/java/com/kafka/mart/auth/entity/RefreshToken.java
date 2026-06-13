@@ -1,5 +1,6 @@
 package com.kafka.mart.auth.entity;
 
+import com.kafka.mart.auth.audit.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RefreshToken {
+public class RefreshToken extends BaseAuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

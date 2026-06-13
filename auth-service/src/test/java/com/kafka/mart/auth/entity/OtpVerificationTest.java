@@ -16,9 +16,6 @@ class OtpVerificationTest {
         LocalDateTime expiryTime =
                 LocalDateTime.now().plusMinutes(5);
 
-        LocalDateTime createdAt =
-                LocalDateTime.now();
-
         OtpVerification otpVerification =
                 OtpVerification.builder()
                         .id(1L)
@@ -26,7 +23,6 @@ class OtpVerificationTest {
                         .expiryTime(expiryTime)
                         .verified(true)
                         .attemptCount(2)
-                        .createdAt(createdAt)
                         .user(user)
                         .build();
 
@@ -55,15 +51,11 @@ class OtpVerificationTest {
         );
 
         assertEquals(
-                createdAt,
-                otpVerification.getCreatedAt()
-        );
-
-        assertEquals(
                 user,
                 otpVerification.getUser()
         );
     }
+
 
     @Test
     void settersAndGetters_shouldWork() {
@@ -81,7 +73,6 @@ class OtpVerificationTest {
         otpVerification.setExpiryTime(now);
         otpVerification.setVerified(true);
         otpVerification.setAttemptCount(5);
-        otpVerification.setCreatedAt(now);
         otpVerification.setUser(user);
 
         assertEquals(2L, otpVerification.getId());
@@ -89,48 +80,9 @@ class OtpVerificationTest {
         assertEquals(now, otpVerification.getExpiryTime());
         assertTrue(otpVerification.getVerified());
         assertEquals(5, otpVerification.getAttemptCount());
-        assertEquals(now, otpVerification.getCreatedAt());
         assertEquals(user, otpVerification.getUser());
     }
 
-    @Test
-    void noArgsConstructor_shouldWork() {
-
-        OtpVerification otpVerification =
-                new OtpVerification();
-
-        assertNotNull(
-                otpVerification
-        );
-    }
-
-    @Test
-    void allArgsConstructor_shouldWork() {
-
-        User user = new User();
-
-        LocalDateTime now =
-                LocalDateTime.now();
-
-        OtpVerification otpVerification =
-                new OtpVerification(
-                        1L,
-                        "999999",
-                        now,
-                        true,
-                        3,
-                        now,
-                        user
-                );
-
-        assertEquals(1L, otpVerification.getId());
-        assertEquals("999999", otpVerification.getOtp());
-        assertEquals(now, otpVerification.getExpiryTime());
-        assertTrue(otpVerification.getVerified());
-        assertEquals(3, otpVerification.getAttemptCount());
-        assertEquals(now, otpVerification.getCreatedAt());
-        assertEquals(user, otpVerification.getUser());
-    }
 
     @Test
     void builderDefaultValues_shouldBeApplied() {
@@ -147,10 +99,6 @@ class OtpVerificationTest {
         assertEquals(
                 0,
                 otpVerification.getAttemptCount()
-        );
-
-        assertNotNull(
-                otpVerification.getCreatedAt()
         );
     }
 }

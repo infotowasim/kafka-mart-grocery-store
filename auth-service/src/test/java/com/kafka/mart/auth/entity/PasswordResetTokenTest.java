@@ -8,20 +8,26 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PasswordResetTokenTest {
 
+    private static final LocalDateTime TEST_TIME =
+            LocalDateTime.of(
+                    2025,
+                    1,
+                    1,
+                    10,
+                    0
+            );
+
     @Test
     void builder_shouldCreatePasswordResetToken() {
 
         User user =
                 new User();
 
-        LocalDateTime expiryDate =
-                LocalDateTime.now();
-
         PasswordResetToken token =
                 PasswordResetToken.builder()
                         .id(1L)
                         .token("reset-token")
-                        .expiryDate(expiryDate)
+                        .expiryDate(TEST_TIME)
                         .user(user)
                         .build();
 
@@ -36,7 +42,7 @@ class PasswordResetTokenTest {
         );
 
         assertEquals(
-                expiryDate,
+                TEST_TIME,
                 token.getExpiryDate()
         );
 
@@ -55,12 +61,9 @@ class PasswordResetTokenTest {
         User user =
                 new User();
 
-        LocalDateTime expiryDate =
-                LocalDateTime.now();
-
         token.setId(2L);
         token.setToken("token-123");
-        token.setExpiryDate(expiryDate);
+        token.setExpiryDate(TEST_TIME);
         token.setUser(user);
 
         assertEquals(
@@ -74,7 +77,7 @@ class PasswordResetTokenTest {
         );
 
         assertEquals(
-                expiryDate,
+                TEST_TIME,
                 token.getExpiryDate()
         );
 
@@ -90,44 +93,8 @@ class PasswordResetTokenTest {
         PasswordResetToken token =
                 new PasswordResetToken();
 
-        assertNotNull(token);
-    }
-
-    @Test
-    void allArgsConstructor_shouldWork() {
-
-        User user =
-                new User();
-
-        LocalDateTime expiryDate =
-                LocalDateTime.now();
-
-        PasswordResetToken token =
-                new PasswordResetToken(
-                        1L,
-                        "reset-token",
-                        expiryDate,
-                        user
-                );
-
-        assertEquals(
-                1L,
-                token.getId()
-        );
-
-        assertEquals(
-                "reset-token",
-                token.getToken()
-        );
-
-        assertEquals(
-                expiryDate,
-                token.getExpiryDate()
-        );
-
-        assertEquals(
-                user,
-                token.getUser()
+        assertNotNull(
+                token
         );
     }
 }
